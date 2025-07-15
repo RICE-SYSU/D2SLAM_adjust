@@ -1,5 +1,5 @@
 <launch>
-    <arg name="show" default="false" />
+    <arg name="show" default="true" />
     <arg name="output" default="screen" />
     <arg name="send_img"     default="false"/>
     <arg name="send_whole_img_desc"     default="false"/>
@@ -11,12 +11,12 @@
     <arg name="config_depth" default="$(find d2vins)/../config/quadcam/quadcam_single.yaml" />
     <arg name="match_index_dist" default="200" />
     <arg name="match_index_dist_remote" default="20" />
-    <arg name="output_path" default="/home/dji/output/" />
+    <arg name="output_path" default="/root/swarm_ws/output/" />
     <arg name="nonkeyframe_waitsec" default="5.0" />
     <arg name="inter_drone_init_frames" default="3" />
-    <arg name="enable_loop" default="true" />
-    <arg name="enable_pgo" default="true" />
-    <arg name="rviz" default="false" />
+    <arg name="enable_loop" default="false" />
+    <arg name="enable_pgo" default="false" />
+    <arg name="rviz" default="true" />
     <arg name="is_4dof" default="false" />
     <arg name="depth_gen" default="false" />
     <arg name="main_id" default="1" /> <!-- This only determine trust which drone to setup cooridinate frme -->
