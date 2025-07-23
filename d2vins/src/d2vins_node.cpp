@@ -166,6 +166,8 @@ protected:
             has_received_imu = true;
             last_imu_ts = imu.header.stamp.toSec();
         }
+        data.acc = Vector3d(0, 0, 0);
+        data.gyro = Vector3d(0, 0, 0);
         data.dt = imu.header.stamp.toSec() - last_imu_ts;
         last_imu_ts = imu.header.stamp.toSec();
         estimator->inputImu(data);

@@ -70,7 +70,10 @@ bool D2Estimator::tryinitFirstPose(VisualImageDescArray & frame) {
         return false;
     }
     auto mean_acc = _imubuf.mean_acc();
-    auto q0 = Utility::g2R(mean_acc);
+
+    // auto q0       = Utility::g2R(mean_acc); //change
+    auto q0 = Eigen::Quaterniond::Identity();
+    
     auto last_odom = Swarm::Odometry(frame.stamp, Swarm::Pose(q0, Vector3d::Zero()));
 
     //Easily use the average value as gyrobias now
@@ -592,15 +595,15 @@ void D2Estimator::solveNonDistrib() {
 }
 
 void D2Estimator::addIMUFactor(FrameIdType frame_ida, FrameIdType frame_idb, IntegrationBase* pre_integrations) {
-    IMUFactor* imu_factor = new IMUFactor(pre_integrations);
-    auto info = ImuResInfo::create(imu_factor, frame_ida, frame_idb);
-    solver->addResidual(info);
-    if (params->always_fixed_first_pose) {
-        //At this time we fix the first pose and ignore the margin of this imu factor to achieve better numerical stability
-        return;
-    }
-    marginalizer->addResidualInfo(info);
-    solve_count ++;
+    // IMUFactor* imu_factor = new IMUFactor(pre_integrations);
+    // auto info = ImuResInfo::create(imu_factor, frame_ida, frame_idb);
+    // solver->addResidual(info);
+    // if (params->always_fixed_first_pose) {
+    //     //At this time we fix the first pose and ignore the margin of this imu factor to achieve better numerical stability
+    //     return;
+    // }
+    // marginalizer->addResidualInfo(info);
+    // solve_count ++;
 }
 
 void D2Estimator::setupImuFactors() {
@@ -721,7 +724,9 @@ void D2Estimator::setupLandmarkFactors() {
                 continue;
             }
             auto mea1 = lm_per_frame.measurement();
-            ResidualInfo * info = nullptr;
+            ResidualInfo *info = nullptr;
+            firstObs.cur_td    = 0;
+            firstObs.velocity  = Vector3d::Zero();
             if (lm_per_frame.camera_id == base_camera_id) {
                 ceres::CostFunction * f_td = nullptr;
                 bool enable_depth_mea = false;
