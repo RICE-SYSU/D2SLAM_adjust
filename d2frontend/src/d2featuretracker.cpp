@@ -519,7 +519,7 @@ TrackReport D2FeatureTracker::trackLK(const VisualImageDesc & left_frame, Visual
     auto cur_lk_pyr = prev_lk_info[left_frame.camera_index].pyr;
     assert(left_frame.frame_id == prev_lk_info[left_frame.camera_index].frame_id);
     if (!cur_lk_ids.empty()) {
-        cur_lk_pts = opticalflowTrackPyr(right_frame.raw_image, cur_lk_pyr, cur_lk_pts, cur_lk_ids, type, false);
+        cur_lk_pts = opticalflowTrackPyr(right_frame.raw_image, cur_lk_pyr, cur_lk_pts, cur_lk_ids, type, false, left_frame.raw_image);
     }
     // printf("[trackLK] indices %d<->%d track type %d LK points: %lu\n", left_frame.camera_index, right_frame.camera_index, type, cur_lk_pts.size());
     for (int i = 0; i < cur_lk_pts.size(); i++) {

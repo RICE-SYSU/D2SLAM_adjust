@@ -78,7 +78,7 @@ void D2Frontend::monoImageCallback(const sensor_msgs::ImageConstPtr & image) {
     std::vector<cv::Mat> imgs;
     const int num_imgs = 4;
     for (int i = 0; i < 4; i++) {
-        imgs.emplace_back(img(cv::Rect(i * img.cols /num_imgs, 0, img.cols /num_imgs, img.rows)));
+        imgs.emplace_back(img(cv::Rect((3-i) * img.cols /num_imgs, 0, img.cols /num_imgs, img.rows)));
         if (imgs.back().channels() == 3) {
             cv::cvtColor(imgs.back(), imgs.back(), cv::COLOR_BGR2GRAY);
         }
@@ -97,6 +97,8 @@ void D2Frontend::processStereoframe(const StereoFrame & stereoframe) {
     auto vframearry = loop_cam->processStereoframe(stereoframe);
     vframearry.motion_prediction = getMotionPredict(vframearry.stamp);
     bool is_keyframe = feature_tracker->trackLocalFrames(vframearry);
+    std::cout << "[D2Frontend::processStereoframe] Processed stereo frame " << stereoframe.stamp.toSec() 
+              << " with " << vframearry.images.size() << " images, is_keyframe: " << is_keyframe << std::endl;
     vframearry.prevent_adding_db = !is_keyframe;
     vframearry.is_keyframe = is_keyframe;
     received_image = true;

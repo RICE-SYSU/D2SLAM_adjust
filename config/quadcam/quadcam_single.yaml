@@ -52,6 +52,8 @@ fuse_dep: 0 #if fuse depth measurement
 max_depth_to_fuse: 5.0
 min_depth_to_fuse: 0.3
 
+debug_print_states: 0
+
 #Multi-drone
 track_remote_netvlad_thres: 0.5
 

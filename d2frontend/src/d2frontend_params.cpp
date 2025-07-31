@@ -101,6 +101,19 @@ namespace D2FrontEnd {
         ftconfig->parallex_thres = fsSettings["parallex_thres"];
         ftconfig->knn_match_ratio = fsSettings["knn_match_ratio"];
         ftconfig->frame_step = fsSettings["frame_step"];
+
+        if (!fsSettings["PYR_LEVEL"].empty()) {
+            ftconfig->PYR_LEVEL = fsSettings["PYR_LEVEL"];
+        } else {
+            printf("[D2FrontendParams] PYR_LEVEL not found, use default\n");
+        }
+        if (!fsSettings["WIN_SIZE"].empty()) {
+            int win_size = fsSettings["WIN_SIZE"];
+            ftconfig->WIN_SIZE = cv::Size(win_size, win_size);
+        } else {
+            printf("[D2FrontendParams] WIN_SIZE not found, use default\n");
+        }
+
         nh.param<int>("long_track_thres", ftconfig->long_track_thres, 20);
         nh.param<int>("last_track_thres", ftconfig->last_track_thres, 20);
         nh.param<double>("new_feature_thres", ftconfig->new_feature_thres, 0.5);

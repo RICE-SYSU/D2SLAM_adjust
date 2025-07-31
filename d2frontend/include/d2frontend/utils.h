@@ -45,7 +45,7 @@ std::vector<cv::Point2f> opticalflowTrack(const cv::Mat & cur_img, const cv::Mat
         std::vector<LandmarkIdType> & ids, TrackLRType type=WHOLE_IMG_MATCH, bool enable_cuda=true);
 
 std::vector<cv::Point2f> opticalflowTrackPyr(const cv::Mat & cur_img, std::vector<cv::cuda::GpuMat> & prev_pyr, 
-        std::vector<cv::Point2f> & prev_pts, std::vector<LandmarkIdType> & ids, TrackLRType type=WHOLE_IMG_MATCH, bool update_pyr=true);
+        std::vector<cv::Point2f> & prev_pts, std::vector<LandmarkIdType> & ids, TrackLRType type=WHOLE_IMG_MATCH, bool update_pyr=true, cv::Mat ori_img = cv::Mat());
 
 std::vector<cv::DMatch> matchKNN(const cv::Mat & desc_a, const cv::Mat & desc_b, double knn_match_ratio=0.8,
         const std::vector<cv::Point2f> pts_a=std::vector<cv::Point2f>(),

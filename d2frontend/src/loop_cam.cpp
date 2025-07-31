@@ -1,6 +1,7 @@
 #include <d2frontend/loop_cam.h>
 #include <camodocal/camera_models/CameraFactory.h>
 #include <cv_bridge/cv_bridge.h>
+#include <iostream>
 #include <opencv2/opencv.hpp>
 #include "opencv2/features2d.hpp"
 #include <swarm_msgs/swarm_lcm_converter.hpp>
@@ -439,6 +440,7 @@ std::vector<VisualImageDesc> LoopCam::generateStereoImageDescriptor(const Stereo
             auto pt_cam = pose_up.att().inverse() * (point_3d - pose_up.pos());
 
             if (err > TRIANGLE_THRES) {
+                std::cout << "Triangulate error too large: " << err << " at " << pt_up << " and " << pt_down << std::endl;
                 continue;
             }
 

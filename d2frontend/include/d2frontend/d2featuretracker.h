@@ -2,6 +2,7 @@
 
 #include "d2frontend_params.h"
 #include "d2landmark_manager.h"
+#include <opencv2/core/types.hpp>
 #include <unordered_map>
 #include <mutex>
 #include <d2common/d2frontend_types.h>
@@ -42,6 +43,9 @@ struct D2FTConfig {
     std::string superglue_model_path;
     double landmark_distance_assumption = 2.0; // For uninitialized landmark, assume it is 3m away
     int frame_step = 2;
+
+    int PYR_LEVEL = 3;
+    cv::Size WIN_SIZE = cv::Size(21, 21); // Window size for LK optical flow
 };
 
 struct TrackReport {

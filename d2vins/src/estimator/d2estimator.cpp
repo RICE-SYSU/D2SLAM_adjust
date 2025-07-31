@@ -357,7 +357,14 @@ void D2Estimator::setStateProperties() {
     if (!params->estimate_td || state.size() < params->max_sld_win_size || 
                 state.lastFrame().odom.vel().norm() < params->estimate_extrinsic_vel_thres) {
         // printf("[D2Estimator::setStateProperties@%d] set td to fixed sld_size %d/%d \n", self_id, state.size(), params->max_sld_win_size);
-        problem.SetParameterBlockConstant(state.getTdState(self_id));
+        // ========= 核心修改开始 =========
+        auto* td_param_ptr = state.getTdState(self_id);
+        
+        // 检查 Td 参数块是否已经存在于 Problem 中
+        if (problem.HasParameterBlock(td_param_ptr)) {
+            problem.SetParameterBlockConstant(td_param_ptr);
+        }
+        // ========= 核心修改结束 =========
     }
 
     if (!state.getPrior() || params->always_fixed_first_pose) {

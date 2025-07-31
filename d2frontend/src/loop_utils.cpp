@@ -1,10 +1,13 @@
 #include <d2frontend/utils.h>
+#include <opencv2/core/types.hpp>
+#include <opencv2/imgproc.hpp>
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/eigen.hpp>
 #include <fstream>
 #include <d2common/d2basetypes.h>
 #include <d2common/utils.hpp>
 #include <d2frontend/d2frontend_params.h>
+#include <d2frontend/d2featuretracker.h>
 #include <opengv/sac_problems/absolute_pose/AbsolutePoseSacProblem.hpp>
 #include <opengv/absolute_pose/methods.hpp>
 #include <opengv/absolute_pose/NoncentralAbsoluteAdapter.hpp>
@@ -20,8 +23,9 @@ using namespace std::chrono;
 using namespace D2Common;
 using D2Common::Utility::TicToc;
 
-#define PYR_LEVEL 3
-#define WIN_SIZE cv::Size(21, 21)
+// #define PYR_LEVEL 3
+// #define WIN_SIZE cv::Size(21, 21)
+
 
 namespace D2FrontEnd {
 
@@ -291,6 +295,16 @@ std::vector<cv::Point2f> opticalflowTrack(const cv::Mat & cur_img, const cv::Mat
     std::vector<float> err;
     std::vector<uchar> reverse_status;
     std::vector<cv::Point2f> reverse_pts;
+
+    int PYR_LEVEL = params->ftconfig->PYR_LEVEL;
+    if (PYR_LEVEL < 1) {
+        PYR_LEVEL = 1;
+    }
+    cv::Size WIN_SIZE = params->ftconfig->WIN_SIZE;
+    if (WIN_SIZE.width < 1 || WIN_SIZE.height < 1) {
+        WIN_SIZE = cv::Size(21, 21);
+    }
+
     if (enable_cuda) {
         cv::cuda::GpuMat gpu_prev_img(prev_img);
         cv::cuda::GpuMat gpu_cur_img(cur_img);
@@ -356,7 +370,7 @@ std::vector<cv::Point2f> opticalflowTrack(const cv::Mat & cur_img, const cv::Mat
 } 
 
 std::vector<cv::Point2f> opticalflowTrackPyr(const cv::Mat & cur_img, std::vector<cv::cuda::GpuMat> & prev_pyr, 
-        std::vector<cv::Point2f> & prev_pts, std::vector<LandmarkIdType> & ids, TrackLRType type, bool update_pyr) {
+        std::vector<cv::Point2f> & prev_pts, std::vector<LandmarkIdType> & ids, TrackLRType type, bool update_pyr, cv::Mat ori_img) {
     if (prev_pts.size() == 0) {
         return std::vector<cv::Point2f>();
     }
@@ -400,9 +414,19 @@ std::vector<cv::Point2f> opticalflowTrackPyr(const cv::Mat & cur_img, std::vecto
     if (cur_pts.size() == 0) {
         return std::vector<cv::Point2f>();
     }
+
     std::vector<float> err;
     std::vector<uchar> reverse_status;
     std::vector<cv::Point2f> reverse_pts;
+
+    int PYR_LEVEL = params->ftconfig->PYR_LEVEL;
+    if (PYR_LEVEL < 1) {
+        PYR_LEVEL = 1;
+    }
+    cv::Size WIN_SIZE = params->ftconfig->WIN_SIZE;
+    if (WIN_SIZE.width < 1 || WIN_SIZE.height < 1) {
+        WIN_SIZE = cv::Size(21, 21);
+    }
 
     cv::cuda::GpuMat gpu_cur_img(cur_img);
     cv::cuda::GpuMat gpu_prev_pts(prev_pts);
@@ -428,6 +452,27 @@ std::vector<cv::Point2f> opticalflowTrackPyr(const cv::Mat & cur_img, std::vecto
     d_pyrLK_sparse->calc(cur_pyr, prev_pyr, gpu_cur_pts, reverse_gpu_pts, reverse_gpu_status);
     reverse_gpu_pts.download(reverse_pts);
     reverse_gpu_status.download(reverse_status);
+
+    // if (!ori_img.empty()) {
+    //     cv::Mat cur_img_show = cur_img.clone(), prev_img_show = ori_img.clone();
+    //     cv::Mat total_show =
+    //         cv::Mat::zeros(cur_img_show.rows, cur_img_show.cols * 2, CV_8UC3);
+    //     cv::cvtColor(cur_img_show, cur_img_show, cv::COLOR_GRAY2BGR);
+    //     cv::cvtColor(prev_img_show, prev_img_show, cv::COLOR_GRAY2BGR);
+    //     cv::hconcat(cur_img_show, prev_img_show, total_show);
+    //     for (size_t i = 0; i < status.size(); i++) {
+    //         if (status[i] && reverse_status[i]) {
+    //             cv::line(total_show, cur_pts[i], reverse_pts[i] + cv::Point2f(cur_img.cols, 0), cv::Scalar(0, 255, 0), 1);
+    //             cv::circle(total_show, cur_pts[i], 3, cv::Scalar(0, 255, 0), -1);
+    //             cv::circle(total_show, reverse_pts[i] + cv::Point2f(cur_img.cols, 0), 3, cv::Scalar(0, 255, 0), -1);
+    //         }
+    //         else if(status[i] && !reverse_status[i]) {
+    //             cv::circle(total_show, cur_pts[i], 3, cv::Scalar(0, 0, 255), -1);
+    //         }
+    //     }
+    //     cv::imshow("Optical Flow Tracking", total_show);
+    //     cv::waitKey(0);
+    // }
 
     for(size_t i = 0; i < status.size(); i++)
     {
@@ -643,6 +688,7 @@ Swarm::Pose computePosePnPnonCentral(const std::vector<Vector3d> & lm_positions_
     ransac.computeModel();
     //Obtain relative pose results
     inliers = ransac.inliers_;
+    std::cout << "[SWARM_LOOP] PnP RANSAC inliers " << inliers.size() << "/" << lm_3d_norm_b.size() << std::endl;
     auto best_transformation = ransac.model_coefficients_;
     Matrix3d R = best_transformation.block<3, 3>(0, 0);
     Vector3d t = best_transformation.block<3, 1>(0, 3);
